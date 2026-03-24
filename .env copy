@@ -1,0 +1,13 @@
+# ==========================================
+# VARIABLES DEL BACKEND (Express)
+# ==========================================
+PORT=3001
+SPREADSHEET_ID="1A2B3C4D5E6F7G8H9I0J..."
+GOOGLE_SERVICE_ACCOUNT_EMAIL="tu-service-account@tu-proyecto.iam.gserviceaccount.com"
+GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASC...\n-----END PRIVATE KEY-----\n"
+
+# ==========================================
+# VARIABLES DEL FRONTEND (Vite / React)
+# ==========================================
+# Recuerda: Todo lo que lea el frontend DEBE empezar con VITE_
+VITE_API_URL="http://localhost:3001/api/reports"

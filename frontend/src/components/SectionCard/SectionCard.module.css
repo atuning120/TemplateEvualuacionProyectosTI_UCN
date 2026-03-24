@@ -1,0 +1,51 @@
+/* src/components/SectionCard/SectionCard.module.css */
+
+.card {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  border: 1px solid #e1e4e8;
+  transition: box-shadow 0.3s ease;
+
+  .titleContainer {
+    display: flex;
+    align-items: center;
+    border-bottom: 2px solid #f1f3f5;
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
+    
+    .number {
+      background-color: #24292e; /* Color oscuro tipo GitHub */
+      color: white;
+      border-radius: 50%;
+      width: 35px;
+      height: 35px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: bold;
+      margin-right: 1rem;
+      font-size: 1.1rem;
+    }
+    
+    .title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #1b1f23;
+      margin: 0;
+    }
+  }
+  
+  
+  .content {
+    color: #444;
+    line-height: 1.6;
+  }
+
+  &:hover {
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  }
+}
+
