@@ -119,15 +119,46 @@
 .field-grid {
   display: grid;
   gap: 0.85rem;
+  align-items: start;
 }
 
 .two-col {
   grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
 }
 
+.general-info-grid {
+  grid-template-columns: repeat(3, minmax(220px, 1fr));
+  grid-template-areas:
+    'project code team'
+    'pm pm team';
+}
+
+.general-info-project {
+  grid-area: project;
+}
+
+.general-info-code {
+  grid-area: code;
+}
+
+.general-info-team {
+  grid-area: team;
+}
+
+.general-info-pm {
+  grid-area: pm;
+}
+
+.general-info-grid .field > span {
+  min-height: 2.7em;
+  display: flex;
+  align-items: flex-end;
+}
+
 .field {
   display: grid;
   gap: 0.38rem;
+  align-content: start;
 }
 
 .field > span {
@@ -136,10 +167,13 @@
   color: #2f3a49;
 }
 
-.field input,
+.field input:not([type='checkbox']),
 .field textarea,
 .field select {
   width: 100%;
+  min-height: 44px;
+  height: auto;
+  align-self: start;
   border: 1px solid #c9d2df;
   border-radius: 10px;
   padding: 0.65rem 0.75rem;
@@ -194,6 +228,203 @@
   margin-top: 1rem;
 }
 
+.general-info-actions {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.65rem;
+}
+
+.team-members-text-list {
+  border: 1px solid #c9d2df;
+  border-radius: 10px;
+  padding: 0.65rem 0.75rem;
+  background: #fbfcff;
+}
+
+.team-members-text-list p {
+  margin: 0;
+}
+
+.team-members-text-list p + p {
+  margin-top: 0.35rem;
+}
+
+.team-members-bullet-list {
+  margin: 0.35rem 0 0;
+  padding-left: 1.15rem;
+  color: #2f3a49;
+}
+
+.team-members-bullet-list.scrollable {
+  max-height: 6.2rem;
+  overflow-y: auto;
+  padding-right: 0.35rem;
+}
+
+.team-members-bullet-list li + li {
+  margin-top: 0.2rem;
+}
+
+.team-members-title {
+  margin: 0;
+  padding: 0;
+  color: #2f3a49;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.team-members-toggle {
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+  line-height: 1;
+  color: #2f3a49;
+}
+
+.team-members-toggle input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  min-height: 16px;
+  margin: 0;
+  padding: 0;
+  accent-color: var(--accent);
+}
+
+.team-members-editor {
+  position: relative;
+  display: grid;
+  gap: 0.45rem;
+  margin-top: 0.55rem;
+}
+
+.team-dropdown-trigger {
+  width: 100%;
+  border: 1px solid #c9d2df;
+  border-radius: 10px;
+  padding: 0.65rem 0.75rem;
+  font: inherit;
+  color: var(--ink);
+  background: #fbfcff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+
+.team-dropdown-caret {
+  color: #4e5f7d;
+  font-size: 0.85rem;
+}
+
+.team-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  left: 0;
+  right: 0;
+  z-index: 5;
+  border: 1px solid #c9d2df;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18);
+  padding: 0.5rem;
+  display: grid;
+  gap: 0.45rem;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.team-dropdown-empty {
+  margin: 0;
+  padding: 0.45rem 0.55rem;
+  font-size: 0.9rem;
+  color: #5a6a84;
+}
+
+.team-dropdown-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr) auto auto;
+  align-items: center;
+  gap: 0.45rem;
+  border: 1px solid #e4eaf3;
+  border-radius: 8px;
+  padding: 0.4rem;
+  background: #fbfcff;
+}
+
+.team-dropdown-item.readonly-item {
+  grid-template-columns: minmax(0, 1fr) auto auto;
+}
+
+.team-dropdown-item.new-item {
+  grid-template-columns: minmax(0, 0.9fr) auto auto;
+}
+
+.team-dropdown-item.active {
+  border-color: #8ab0ea;
+  background: #f4f8ff;
+}
+
+.team-dropdown-select {
+  border: 0;
+  background: transparent;
+  color: #1f2f44;
+  font: inherit;
+  font-weight: 700;
+  text-align: left;
+  padding: 0.25rem 0.2rem;
+  cursor: pointer;
+  min-width: 0;
+}
+
+.team-dropdown-item input {
+  width: 100%;
+  max-width: 160px;
+  border: 1px solid #c9d2df;
+  border-radius: 8px;
+  padding: 0.45rem 0.55rem;
+  font: inherit;
+  min-width: 0;
+  justify-self: end;
+}
+
+.team-inline-icon-btn {
+  border: 1px solid #c4d0e3;
+  border-radius: 8px;
+  background: #f6f9ff;
+  color: #213553;
+  font: inherit;
+  font-weight: 800;
+  width: 2.1rem;
+  height: 2.1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.team-inline-icon-btn.danger {
+  color: #9c1f1f;
+  border-color: #e3bcbc;
+  background: #fff6f6;
+}
+
+.team-dropdown-add {
+  border: 1px dashed #9bb2d9;
+  border-radius: 8px;
+  background: #f8fbff;
+  color: #294268;
+  font: inherit;
+  font-weight: 700;
+  padding: 0.55rem 0.65rem;
+  text-align: left;
+  cursor: pointer;
+}
+
 .secondary-btn {
   border: 1px solid #b7c3d7;
   border-radius: 10px;
@@ -210,6 +441,13 @@
 .secondary-btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 7px 14px rgba(15, 23, 42, 0.14);
+}
+
+.secondary-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .submit-btn {
@@ -266,6 +504,32 @@
 
   .submit-wrap {
     text-align: center;
+  }
+
+  .general-info-grid {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'project'
+      'code'
+      'team'
+      'pm';
+  }
+
+  .general-info-grid .field > span {
+    min-height: 0;
+  }
+
+  .general-info-actions {
+    justify-content: stretch;
+    flex-direction: column;
+  }
+
+  .team-dropdown-item {
+    grid-template-columns: 1fr;
+  }
+
+  .general-info-actions .secondary-btn {
+    width: 100%;
   }
 
   .submit-btn {
