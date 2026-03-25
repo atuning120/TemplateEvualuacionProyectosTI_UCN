@@ -1,0 +1,77 @@
+.notification-modal-container {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 40;
+  display: flex;
+  justify-content: flex-end;
+  pointer-events: none;
+}
+
+.notification-modal {
+  width: min(440px, calc(100vw - 2rem));
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  align-items: start;
+  border-radius: 12px;
+  border: 1px solid;
+  padding: 0.8rem 0.9rem;
+  font-weight: 700;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.16);
+  pointer-events: auto;
+  animation: notification-slide-in 220ms ease-out;
+}
+
+.notification-modal p {
+  margin: 0;
+  line-height: 1.35;
+}
+
+.notification-modal.success {
+  background: #ecfdf3;
+  border-color: #86efac;
+  color: #166534;
+}
+
+.notification-modal.error {
+  background: #fff1f2;
+  border-color: #fda4af;
+  color: #9f1239;
+}
+
+.notification-close-btn {
+  width: 1.8rem;
+  height: 1.8rem;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font-size: 0.9rem;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+}
+
+@keyframes notification-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 700px) {
+  .notification-modal-container {
+    top: 0.75rem;
+    right: 0.75rem;
+  }
+
+  .notification-modal {
+    width: min(440px, calc(100vw - 1.5rem));
+  }
+}

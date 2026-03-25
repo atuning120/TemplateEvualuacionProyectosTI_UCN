@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import SectionCard from '../components/SectionCard/SectionCard';
 import CustomDropdown from '../components/CustomDropdown/CustomDropdown';
+import NotificationModal from '../components/NotificationModal/NotificationModal';
 import './ReportFormPage.css';
 
 const initialForm = {
@@ -97,6 +98,10 @@ const ReportFormPage = () => {
   const [creatingProject, setCreatingProject] = useState(false);
   const [sending, setSending] = useState(false);
   const [feedback, setFeedback] = useState({ type: '', message: '' });
+
+  const closeFeedback = useCallback(() => {
+    setFeedback({ type: '', message: '' });
+  }, []);
 
   const apiUrl = useMemo(() => {
     return import.meta.env.VITE_API_URL || 'http://localhost:3001/api/reports';
@@ -527,6 +532,13 @@ const ReportFormPage = () => {
       <div className="bg-shape bg-shape-one" />
       <div className="bg-shape bg-shape-two" />
 
+      <NotificationModal
+        type={feedback.type}
+        message={feedback.message}
+        duration={3000}
+        onClose={closeFeedback}
+      />
+
       <header className="header">
         <p className="eyebrow">Plantilla UCN</p>
         <h1>Reporte Semanal de Proyecto (PM)</h1>
@@ -887,10 +899,6 @@ const ReportFormPage = () => {
               </button>
             </div>
           </>
-        )}
-
-        {feedback.message && (
-          <p className={`feedback ${feedback.type}`}>{feedback.message}</p>
         )}
       </form>
     </main>
