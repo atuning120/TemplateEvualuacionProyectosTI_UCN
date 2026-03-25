@@ -116,6 +116,10 @@
   font-size: 0.93rem;
 }
 
+.project-navbar-edit-wrap {
+  margin-top: 0.65rem;
+}
+
 .field-grid {
   display: grid;
   gap: 0.85rem;
@@ -130,7 +134,8 @@
   grid-template-columns: repeat(3, minmax(220px, 1fr));
   grid-template-areas:
     'project code team'
-    'pm pm team';
+    'pm sprint-number team'
+    'pm sprint-duration team';
 }
 
 .general-info-project {
@@ -147,6 +152,14 @@
 
 .general-info-pm {
   grid-area: pm;
+}
+
+.general-info-sprint-number {
+  grid-area: sprint-number;
+}
+
+.general-info-sprint-duration {
+  grid-area: sprint-duration;
 }
 
 .general-info-grid .field > span {
@@ -222,10 +235,6 @@
 .submit-wrap {
   margin-top: 1rem;
   text-align: right;
-}
-
-.general-edit-wrap {
-  margin-top: 1rem;
 }
 
 .general-info-actions {
@@ -512,7 +521,9 @@
       'project'
       'code'
       'team'
-      'pm';
+      'pm'
+      'sprint-number'
+      'sprint-duration';
   }
 
   .general-info-grid .field > span {

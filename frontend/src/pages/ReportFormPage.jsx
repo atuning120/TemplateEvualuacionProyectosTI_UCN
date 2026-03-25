@@ -1,8 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import SectionCard from '../components/SectionCard/SectionCard';
 import CustomDropdown from '../components/CustomDropdown/CustomDropdown';
+import StatusDropdown from '../components/StatusDropdown/StatusDropdown';
 import NotificationModal from '../components/NotificationModal/NotificationModal';
 import './ReportFormPage.css';
+
+const PROJECT_STATUS_OPTIONS = [
+  { value: 'en tiempo', label: 'En tiempo', color: 'green' },
+  { value: 'en riesgo', label: 'En riesgo', color: 'yellow' },
+  { value: 'atrasado', label: 'Atrasado', color: 'red' },
+];
 
 const initialForm = {
   // Seccion 2
@@ -63,6 +70,8 @@ const normalizeProject = (project) => ({
   projectCode: toSafeText(project?.projectCode),
   teamName: toSafeText(project?.teamName),
   pmName: toSafeText(project?.pmName),
+  sprintNumber: toSafeText(project?.sprintNumber) || '0',
+  sprintDurationWeeks: toSafeText(project?.sprintDurationWeeks) || '0',
 });
 
 const parseTeamMembers = (teamName) =>
@@ -157,6 +166,10 @@ const ReportFormPage = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleProjectStatusChange = (value) => {
+    setFormData((prev) => ({ ...prev, projectStatus: value }));
+  };
+
   const handleProjectSelection = (event) => {
     if (isEditingGeneralInfo) {
       setIsEditingGeneralInfo(false);
@@ -180,6 +193,8 @@ const ReportFormPage = () => {
       projectCode: toSafeText(selectedProject.projectCode),
       teamName: toSafeText(selectedProject.teamName),
       pmName: toSafeText(selectedProject.pmName),
+      sprintNumber: toSafeText(selectedProject.sprintNumber) || '0',
+      sprintDurationWeeks: toSafeText(selectedProject.sprintDurationWeeks) || '0',
     });
 
     const members = parseTeamMembers(selectedProject.teamName);
@@ -335,6 +350,8 @@ const ReportFormPage = () => {
       projectCode: toSafeText(generalInfoDraft.projectCode).trim(),
       teamName: serializeTeamMembers(confirmedTeamMembers),
       pmName: toSafeText(generalInfoDraft.pmName).trim(),
+      sprintNumber: toSafeText(generalInfoDraft.sprintNumber).trim(),
+      sprintDurationWeeks: toSafeText(generalInfoDraft.sprintDurationWeeks).trim(),
     };
 
     setSavingGeneralInfo(true);
@@ -416,6 +433,8 @@ const ReportFormPage = () => {
         projectCode: data.project.projectCode,
         teamName: '',
         pmName: '',
+        sprintNumber: '0',
+        sprintDurationWeeks: '0',
       };
       const normalizedCreatedProject = normalizeProject(createdProject);
 
@@ -434,6 +453,8 @@ const ReportFormPage = () => {
         projectCode: normalizedCreatedProject.projectCode,
         teamName: normalizedCreatedProject.teamName,
         pmName: normalizedCreatedProject.pmName,
+        sprintNumber: normalizedCreatedProject.sprintNumber,
+        sprintDurationWeeks: normalizedCreatedProject.sprintDurationWeeks,
       });
       setTeamMembersDraft([]);
       setIsEditingTeamMembers(true);
@@ -577,9 +598,23 @@ const ReportFormPage = () => {
         </div>
 
         {selectedProject && (
-          <p className="project-navbar-meta">
-            Hoja destino: {selectedProject.sheetIndex} | Codigo: {selectedProject.projectCode}
-          </p>
+          <>
+            <p className="project-navbar-meta">
+              Hoja destino: {selectedProject.sheetIndex} | Codigo: {selectedProject.projectCode}
+            </p>
+
+            <div className="project-navbar-edit-wrap">
+              <button
+                type="button"
+                className="secondary-btn"
+                onClick={isEditingGeneralInfo ? handleCancelGeneralInfoEdit : handleStartGeneralInfoEdit}
+              >
+                {isEditingGeneralInfo
+                  ? 'Ocultar edicion de informacion general'
+                  : 'Editar informacion general del proyecto'}
+              </button>
+            </div>
+          </>
         )}
       </nav>
 
@@ -590,34 +625,6 @@ const ReportFormPage = () => {
 
         {projects.length > 0 && (
           <>
-            <SectionCard number="0" title="Proyecto seleccionado">
-          <div className="field-grid two-col">
-            <label className="field">
-              <span>Numero de hoja en Google Sheets</span>
-              <input
-                type="number"
-                value={selectedProject?.sheetIndex ?? ''}
-                disabled
-                readOnly
-              />
-            </label>
-            <label className="field">
-              <span>Codigo / Identificador</span>
-              <input type="text" value={selectedProject?.projectCode ?? ''} disabled readOnly />
-            </label>
-          </div>
-
-          <div className="general-edit-wrap">
-            <button
-              type="button"
-              className="secondary-btn"
-              onClick={isEditingGeneralInfo ? handleCancelGeneralInfoEdit : handleStartGeneralInfoEdit}
-            >
-              {isEditingGeneralInfo ? 'Ocultar edicion de informacion general' : 'Editar informacion general del proyecto'}
-            </button>
-          </div>
-            </SectionCard>
-
             {isEditingGeneralInfo && selectedProject && generalInfoDraft && (
               <SectionCard number="1" title="Información General">
             <div className="field-grid general-info-grid">
@@ -690,6 +697,30 @@ const ReportFormPage = () => {
                   required
                 />
               </label>
+
+              <label className="field general-info-sprint-number">
+                <span>Sprint actual</span>
+                <input
+                  type="number"
+                  min="1"
+                  step="1"
+                  name="sprintNumber"
+                  value={generalInfoDraft.sprintNumber}
+                  onChange={handleProjectFieldChange}
+                />
+              </label>
+
+              <label className="field general-info-sprint-duration">
+                <span>Duracion del sprint (semanas)</span>
+                <input
+                  type="number"
+                  min="1"
+                  step="1"
+                  name="sprintDurationWeeks"
+                  value={generalInfoDraft.sprintDurationWeeks}
+                  onChange={handleProjectFieldChange}
+                />
+              </label>
             </div>
 
             <div className="general-info-actions">
@@ -712,10 +743,12 @@ const ReportFormPage = () => {
           <div className="field-grid">
             <label className="field">
               <span>Estado general del proyecto</span>
-              <select name="projectStatus" value={formData.projectStatus} onChange={handleChange}>
-                <option value="en tiempo">En tiempo</option>
-                <option value="en riesgo">En riesgo</option>
-              </select>
+              <StatusDropdown
+                name="projectStatus"
+                value={formData.projectStatus}
+                options={PROJECT_STATUS_OPTIONS}
+                onChange={handleProjectStatusChange}
+              />
             </label>
             <label className="field">
               <span>Principales avances de la semana</span>

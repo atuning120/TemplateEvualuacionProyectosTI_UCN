@@ -121,6 +121,8 @@ const PROJECTS_SHEET_COLUMNS = {
   projectCode: 'Codigo identificador',
   teamName: 'Equipo responsable',
   pmName: 'Project Manager',
+  sprintNumber: 'Sprint actual',
+  sprintDurationWeeks: 'Duracion sprint',
 };
 const PROJECTS_SHEET_HEADERS = Object.values(PROJECTS_SHEET_COLUMNS);
 const projectHeaderOf = (field) => PROJECTS_SHEET_COLUMNS[field] || field;
@@ -182,6 +184,26 @@ const addMasterProjectsTable = async (authClient, spreadsheetId, projectsSheet) 
   return response.data;
 };
 
+const deleteMasterProjectsTable = async (authClient, spreadsheetId, tableId) => {
+  if (!tableId) {
+    return;
+  }
+
+  await authClient.request({
+    url: `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`,
+    method: 'POST',
+    data: {
+      requests: [
+        {
+          deleteTable: {
+            tableId,
+          },
+        },
+      ],
+    },
+  });
+};
+
 const ensureProjectsSheetIsRealTable = async (projectsSheet) => {
   const authClient = createAuthClient();
   const spreadsheetId = getSpreadsheetIdFromEnv();
@@ -190,8 +212,14 @@ const ensureProjectsSheetIsRealTable = async (projectsSheet) => {
     (sheet) => sheet?.properties?.sheetId === projectsSheet.sheetId,
   );
 
-  if (sheetMetadata?.tables?.length > 0) {
+  const existingTable = sheetMetadata?.tables?.[0];
+
+  if (existingTable?.range?.endColumnIndex >= PROJECTS_SHEET_HEADERS.length) {
     return true;
+  }
+
+  if (existingTable?.tableId) {
+    await deleteMasterProjectsTable(authClient, spreadsheetId, existingTable.tableId);
   }
 
   await addMasterProjectsTable(authClient, spreadsheetId, projectsSheet);
@@ -280,7 +308,7 @@ const applyProjectsSheetTableFormat = async (projectsSheet) => {
     },
   });
 
-  await projectsSheet.loadCells('A1:E1');
+  await projectsSheet.loadCells('A1:G1');
 
   for (let col = 0; col < PROJECTS_SHEET_HEADERS.length; col += 1) {
     const cell = projectsSheet.getCell(0, col);
@@ -382,12 +410,22 @@ const getRowsSafe = async (sheet) => {
   }
 };
 
-const buildProjectRegistryRow = ({ projectSheetIndex, projectName, projectCode, teamName, pmName }) => ({
+const buildProjectRegistryRow = ({
+  projectSheetIndex,
+  projectName,
+  projectCode,
+  teamName,
+  pmName,
+  sprintNumber,
+  sprintDurationWeeks,
+}) => ({
   [projectHeaderOf('projectSheetIndex')]: toText(projectSheetIndex),
   [projectHeaderOf('projectName')]: toText(projectName),
   [projectHeaderOf('projectCode')]: toText(projectCode),
   [projectHeaderOf('teamName')]: toText(teamName),
   [projectHeaderOf('pmName')]: toText(pmName),
+  [projectHeaderOf('sprintNumber')]: toText(sprintNumber),
+  [projectHeaderOf('sprintDurationWeeks')]: toText(sprintDurationWeeks),
 });
 
 const projectRegistryRowToValues = (rowData) => [
@@ -396,6 +434,8 @@ const projectRegistryRowToValues = (rowData) => [
   toText(rowData[projectHeaderOf('projectCode')]),
   toText(rowData[projectHeaderOf('teamName')]),
   toText(rowData[projectHeaderOf('pmName')]),
+  toText(rowData[projectHeaderOf('sprintNumber')]),
+  toText(rowData[projectHeaderOf('sprintDurationWeeks')]),
 ];
 
 const writeProjectRegistryRowsAt = async (projectsSheet, startRowNumber, rowsData) => {
@@ -404,7 +444,7 @@ const writeProjectRegistryRowsAt = async (projectsSheet, startRowNumber, rowsDat
   }
 
   const endRowNumber = startRowNumber + rowsData.length - 1;
-  await projectsSheet.loadCells(`A${startRowNumber}:E${endRowNumber}`);
+  await projectsSheet.loadCells(`A${startRowNumber}:G${endRowNumber}`);
 
   rowsData.forEach((rowData, rowOffset) => {
     const rowValues = projectRegistryRowToValues(rowData);
@@ -455,6 +495,8 @@ const compactProjectsRegistryRows = async (projectsSheet) => {
       projectCode: row.get(projectHeaderOf('projectCode')),
       teamName: row.get(projectHeaderOf('teamName')),
       pmName: row.get(projectHeaderOf('pmName')),
+      sprintNumber: row.get(projectHeaderOf('sprintNumber')),
+      sprintDurationWeeks: row.get(projectHeaderOf('sprintDurationWeeks')),
     }),
   );
 
@@ -652,6 +694,8 @@ const createProjectSheet = async (req, res) => {
         projectCode,
         teamName: '',
         pmName: '',
+        sprintNumber: '0',
+        sprintDurationWeeks: '0',
       }),
     ]);
 
@@ -663,6 +707,8 @@ const createProjectSheet = async (req, res) => {
         sheetIndex: resolvedSheetIndex,
         projectName: title,
         projectCode,
+        sprintNumber: '0',
+        sprintDurationWeeks: '0',
       },
     });
   } catch (error) {
@@ -705,6 +751,8 @@ const listProjectSheets = async (req, res) => {
           projectCode: '',
           pmName: '',
           teamMembers: [],
+          sprintNumber: '',
+          sprintDurationWeeks: '',
         });
       }
 
@@ -713,6 +761,8 @@ const listProjectSheets = async (req, res) => {
       const projectCode = toText(row.get(projectHeaderOf('projectCode'))).trim();
       const pmName = toText(row.get(projectHeaderOf('pmName'))).trim();
       const teamName = toText(row.get(projectHeaderOf('teamName'))).trim();
+      const sprintNumber = toText(row.get(projectHeaderOf('sprintNumber'))).trim();
+      const sprintDurationWeeks = toText(row.get(projectHeaderOf('sprintDurationWeeks'))).trim();
 
       if (projectName) {
         project.projectName = projectName;
@@ -725,6 +775,12 @@ const listProjectSheets = async (req, res) => {
       }
       if (teamName) {
         project.teamMembers.push(teamName);
+      }
+      if (sprintNumber) {
+        project.sprintNumber = sprintNumber;
+      }
+      if (sprintDurationWeeks) {
+        project.sprintDurationWeeks = sprintDurationWeeks;
       }
     }
 
@@ -743,6 +799,8 @@ const listProjectSheets = async (req, res) => {
         projectCode: groupedProject.projectCode || `PRJ-${String(sheetIndex).padStart(3, '0')}`,
         teamName: groupedProject.teamMembers.join(', '),
         pmName: groupedProject.pmName,
+        sprintNumber: groupedProject.sprintNumber,
+        sprintDurationWeeks: groupedProject.sprintDurationWeeks,
       });
     }
 
@@ -766,6 +824,8 @@ const listProjectSheets = async (req, res) => {
         projectCode: `PRJ-${String(sheetIndex).padStart(3, '0')}`,
         teamName: '',
         pmName: '',
+        sprintNumber: '0',
+        sprintDurationWeeks: '0',
       });
     }
 
@@ -814,6 +874,8 @@ const updateProjectGeneralInfo = async (req, res) => {
       projectCode: toText(req.body?.projectCode).trim(),
       teamName: toText(req.body?.teamName).trim(),
       pmName: toText(req.body?.pmName).trim(),
+      sprintNumber: toText(req.body?.sprintNumber).trim(),
+      sprintDurationWeeks: toText(req.body?.sprintDurationWeeks).trim(),
     };
 
     if (isReservedProjectName(payload.projectName)) {
@@ -848,6 +910,8 @@ const updateProjectGeneralInfo = async (req, res) => {
             projectCode: payload.projectCode,
             teamName: '',
             pmName: payload.pmName,
+            sprintNumber: payload.sprintNumber,
+            sprintDurationWeeks: payload.sprintDurationWeeks,
           }),
         ),
       );
@@ -881,6 +945,8 @@ const updateProjectGeneralInfo = async (req, res) => {
           projectCode: payload.projectCode,
           teamName: normalizedTeamMembers[index],
           pmName: payload.pmName,
+          sprintNumber: payload.sprintNumber,
+          sprintDurationWeeks: payload.sprintDurationWeeks,
         });
 
         await writeProjectRegistryRowAtRowNumber(
@@ -897,6 +963,8 @@ const updateProjectGeneralInfo = async (req, res) => {
         projectCode: payload.projectCode,
         teamName: '',
         pmName: payload.pmName,
+        sprintNumber: payload.sprintNumber,
+        sprintDurationWeeks: payload.sprintDurationWeeks,
       });
 
       await writeProjectRegistryRowAtRowNumber(
@@ -921,6 +989,8 @@ const updateProjectGeneralInfo = async (req, res) => {
         projectCode: payload.projectCode || `PRJ-${String(projectSheetIndex).padStart(3, '0')}`,
         teamName: payload.teamName,
         pmName: payload.pmName,
+        sprintNumber: payload.sprintNumber,
+        sprintDurationWeeks: payload.sprintDurationWeeks,
       },
     });
   } catch (error) {
